@@ -1,8 +1,6 @@
 ;;; -*- lexical-binding: t; -*-
 
 (setq custom-file "~/.emacs.d/emacs-custom.el")
-(setq frame-title-format "%b")
-(setq read-process-output-max (* 1024 1024))
 (load custom-file)
 
 (require 'package)
@@ -13,6 +11,7 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Bindings            ;;
@@ -36,7 +35,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(use-package quelpa)
+(use-package quelpa
+  :custom
+  (quelpa-checkout-melpa-p nil)
+  (quelpa-self-upgrade-p nil))
 
 (use-package quelpa-use-package
   :ensure t
@@ -56,18 +58,29 @@
           (cdr args)))
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
-  ;; Do not allow the cursor in the minibuffer prompt
-  (setq minibuffer-prompt-properties
-        '(read-only t cursor-intangible t face minibuffer-prompt))
-
-  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+  (setq frame-title-format "%b")
+  (setq read-process-output-max (* 1024 1024))
 
   :custom
+  (max-lisp-eval-depth 8000)
+  (max-specpdl-size 16000)
   (inhibit-startup-screen t)
   (gc-cons-threshold 100000000)
   (create-lockfiles nil)
   (enable-recursive-minibuffers t)
-  (delete-by-moving-to-trash t))
+  (delete-by-moving-to-trash t)
+  (tab-width 4)
+  (tool-bar-mode nil)
+  (menu-bar-mode nil)
+  (mouse-autoselect-window t))
+
+(use-package minibuf-eldef
+  :custom
+  (minibuffer-electric-default-mode t))
+
+(use-package password-cache
+  :custom
+  (password-cache-expiry 300))
 
 (use-package ibuffer
   :defer t
@@ -155,10 +168,6 @@
   (tramp-backup-directory-alist '(("." . "~/.cache/emacs/backups")))
   (tramp-connection-properties nil)
   (tramp-default-method "ssh")
-  (tramp-default-method-alist
-   '((nil "\\`\\(anonymous\\|ftp\\)\\" "ftp")
-	("\\`ftp\\." nil "ftp")
-	("\\`\\(127\\.0\\.0\\.1\\|::1\\|archxps\\|localhost6?\\)\\" "\\`root\\" "sudo")))
   (tramp-remote-process-environment
    '("ENV=" "TMOUT=0" "LC_CTYPE=" "CDPATH=" "HISTORY=" "MAIL=" "MAILCHECK=" "MAILPATH=" "PAGER=cat" "autocorrect=" "correct=" "HISTFILE=/dev/null"))
   :config
@@ -182,12 +191,17 @@
 
 (use-package simple
   :custom
-  (async-shell-command-buffer 'new-buffer))
+  (read-extended-command-predicate 'command-completion-default-include-p)
+  (set-mark-command-repeat-pop t)
+  (async-shell-command-buffer 'new-buffer)
+  (next-line-add-newlines t))
 
 (use-package files
   :hook
   (find-file . linum-mode)
   :custom
+  (version-control t)
+  (kept-new-versions 5)
   (delete-old-versions t)
   (backup-by-copying t)
   (backup-directory-alist
@@ -293,6 +307,10 @@
 							 '(company-elisp company-capf company-files company-dabbrev)))))
 
 (use-package lsp
+  :custom
+  (lsp-auto-guess-root t)
+  (lsp-lens-enable nil)
+  (lsp-server-install-dir "~/.cache/lsp")
   :hook 
   (lsp-mode . lsp-enable-which-key-integration)
   (lsp-mode . yas-minor-mode))
@@ -325,7 +343,7 @@
 
 (use-package which-key
   :ensure t
-  :hook (after-init . which-key-mode))
+  :hook (prog-mode . which-key-mode))
 
 (use-package helpful
   :ensure t
@@ -352,7 +370,9 @@
 
 (use-package prettier-js
   :ensure t
-  :defer t)
+  :defer t
+  :custom
+  (prettier-js-show-errors 'echo))
 
 (use-package rjsx-mode
   :ensure t
@@ -367,11 +387,10 @@
 				 (setq tab-width 2))))
 
 (use-package vertico
+  :ensure t
   :hook 
   (rfn-eshadow-update-overlay . vertico-directory-tidy)
-  :config 
-  (setq completion-in-region-function #'consult-completion-in-region)
-  :custom 
+  :custom
   (vertico-mode t)
   :bind 
   (:map vertico-map
@@ -380,19 +399,14 @@
 		("M-<backspace>" . vertico-directory-delete-word)))
 
 (use-package orderless
-  :init
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package embark
   :ensure t
-  :config
-  (embark-define-keymap embark-file-map
-	"Add vterm related actions"
-	("t" (lambda (file) 
-			(setq default-directory (file-name-directory file))
-			(vterm))))
   :bind ("C-," . embark-act))
 
 (use-package ace-window
@@ -400,32 +414,17 @@
   :bind ("C-x o" . ace-window))
 
 (use-package marginalia
+  :ensure t
   :bind (:map minibuffer-local-map
 			  ("M-A" . marginalia-cycle))
-  :init
-  (marginalia-mode))
+  :custom
+  (marginalia-mode t))
 
 (use-package consult
+  :defer t
   :config
   (consult-customize consult-ripgrep consult-git-grep consult-grep :preview-key nil)
-
-  (defun my/docker-source ()
-	"Build a list of active docker containers"
-	(let ((containers))
-	  (setq docker-tramp-use-names t)
-      (dolist (cand (docker-tramp--parse-running-containers ""))
-        (let ((user (if (not (string-empty-p (car cand)))
-                        (concat (car cand) "@")))
-              (host (car (cdr cand))))
-          (push (concat "/docker:" user host ":/") containers)))))
- 	
-  (add-to-list 'consult-buffer-sources 
-			   `(:name     "Docker"
-						   :category docker
-						   :narrow ?d
-						   :items    ,#'my/docker-source
-						   :action   (lambda (dst) (find-file dst)))
-			   'append)
+  (setq completion-in-region-function #'consult-completion-in-region)
   :bind
   ("C-c s" . 'consult-line)
   ("C-c m" . 'consult-mark)
@@ -447,6 +446,7 @@
 
 (use-package embark-consult
   :ensure t
+  :defer t
   :after (embark consult)
   :bind (:map minibuffer-local-map
 			  ("M-o" . embark-export)))

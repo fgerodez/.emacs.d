@@ -5,8 +5,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(bmkp-last-as-first-bookmark-file "/home/francois/.emacs.d/bookmarks/all-bookmarks")
- '(consult-tramp-enable-shosts nil nil nil "Customized with use-package consult-tramp")
- '(csv-separators '(";" "	"))
  '(custom-enabled-themes '(tango-dark) nil nil "Customized with use-package custom")
  '(custom-safe-themes
    '("fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default))
@@ -52,38 +50,8 @@
 	   (mode . gnus-group-mode)
 	   (mode . gnus-summary-mode)
 	   (mode . gnus-article-mode)))))
- '(kept-new-versions 5)
- '(lsp-auto-guess-root t)
- '(lsp-lens-enable nil)
- '(lsp-server-install-dir "/home/francois/.cache/lsp")
- '(max-lisp-eval-depth 8000)
- '(max-specpdl-size 16000)
- '(menu-bar-mode nil)
- '(minibuffer-electric-default-mode t)
- '(mouse-autoselect-window t)
- '(next-line-add-newlines t)
- '(org-fontify-done-headline nil)
- '(org-fontify-todo-headline nil)
  '(package-selected-packages
-   '(js2 dap-php dap-mode php-mode ace-jump-mode lispy esh-autosuggest rainbow-delimiters paredit embark-consult embark lsp dired+ dired diredp consult-tramp marginalia consult orderless vertico bookmark+ quelpa-use-package quelpa systemd trashed yasnippet treemacs-projectile add-node-modules-path prettier-js rjsx-mode csv-mode ibuffer-projectile helpful ag ## disk-usage vterm projectile iedit which-key lsp-ui flycheck lsp-haskell lsp-mode exec-path-from-shell use-package company docker dockerfile-mode magit haskell-mode))
- '(password-cache-expiry 300)
- '(pdf-view-midnight-colors '("#b2b2b2" . "#292b2e"))
- '(prettier-js-show-errors 'echo)
- '(quelpa-checkout-melpa-p nil)
- '(quelpa-self-upgrade-p nil)
- '(read-extended-command-predicate 'command-completion-default-include-p)
- '(set-mark-command-repeat-pop t)
- '(shr-cookie-policy nil)
- '(speedbar-supported-extension-expressions
-   '(".[ch]\\(\\+\\+\\|pp\\|c\\|h\\|xx\\)?" ".tex\\(i\\(nfo\\)?\\)?" ".el" ".emacs" ".l" ".lsp" ".p" ".java" ".js" ".f\\(90\\|77\\|or\\)?" ".ad[abs]" ".p[lm]" ".tcl" ".m" ".scm" ".pm" ".py" ".g" ".s?html" ".ma?k" "[Mm]akefile\\(\\.in\\)?" ".hs"))
- '(tab-width 4)
- '(tags-revert-without-query t)
- '(tool-bar-mode nil)
- '(transient-mark-mode nil)
- '(use-package-always-ensure nil)
- '(version-control t)
- '(vterm-tramp-shells '(("docker" "/bin/sh") ("ssh" "/bin/bash")))
- '(which-function-mode t))
+   '(js2 dap-php dap-mode php-mode ace-jump-mode esh-autosuggest rainbow-delimiters paredit embark-consult embark lsp dired+ dired consult-tramp marginalia consult orderless vertico bookmark+ quelpa-use-package quelpa systemd trashed yasnippet treemacs-projectile add-node-modules-path prettier-js rjsx-mode csv-mode ibuffer-projectile helpful ## disk-usage vterm projectile iedit which-key lsp-ui flycheck lsp-haskell lsp-mode exec-path-from-shell use-package company docker dockerfile-mode magit haskell-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
