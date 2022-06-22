@@ -4,7 +4,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(bmkp-last-as-first-bookmark-file "/home/francois/.emacs.d/bookmarks/all-bookmarks")
+ '(bmkp-last-as-first-bookmark-file "~/.emacs.d/bookmarks/all-bookmarks")
  '(custom-enabled-themes '(tango-dark) nil nil "Customized with use-package custom")
  '(custom-safe-themes
    '("fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default))

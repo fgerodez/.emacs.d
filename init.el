@@ -215,6 +215,25 @@
   :custom
   (exec-path-from-shell-variables '("PATH" "MANPATH" "SSH_AUTH_SOCK")))
 
+(use-package isearch
+  :preface
+  (defun my/isearch-copy-matches ()
+	(interactive)
+	(if (not isearch-success)
+		(message "%s" "No match found")
+	(kill-new "")
+	(save-excursion
+	  (let ((count 0))
+		(while isearch-success
+		  (kill-append (buffer-substring (point) isearch-other-end) nil)
+		  (isearch-repeat-forward)
+		  (kill-append "\n" nil)
+		  (cl-incf count))
+		(message "%d matches copied to kill ring" count)))))
+
+  :bind 
+  (:map isearch-mode-map (("C-k" . 'my/isearch-copy-matches))))
+
 (use-package avy
   :ensure t
   :bind
@@ -392,11 +411,14 @@
   (rfn-eshadow-update-overlay . vertico-directory-tidy)
   :custom
   (vertico-mode t)
+  (vertico-buffer-mode t)
   :bind 
   (:map vertico-map
 		("<return>" . vertico-directory-enter)
 		("<backspace>" . vertico-directory-delete-char)
-		("M-<backspace>" . vertico-directory-delete-word)))
+		("M-<backspace>" . vertico-directory-delete-word)
+		("<next>" . vertico-scroll-down)
+		("<prior>" . vertico-scroll-up)))
 
 (use-package orderless
   :ensure t
@@ -407,7 +429,12 @@
 
 (use-package embark
   :ensure t
-  :bind ("C-," . embark-act))
+  :custom 
+  (embark-quit-after-action nil)
+  :bind 
+  ("C-," . embark-act)
+  (:map minibuffer-local-map 
+		("M-;" . embark-dwim)))
 
 (use-package ace-window
   :ensure t
