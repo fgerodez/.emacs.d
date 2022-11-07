@@ -14,23 +14,6 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Bindings            ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(bind-key "<f8>" 'bookmark-bmenu-list)
-(bind-key "C-x &" 'delete-other-windows)
-(bind-key "C-x à" 'delete-window)
-(bind-key "C-x \"" 'split-window-right)
-(bind-key "C-x é" 'split-window-below)
-(bind-key "C-c c" 'erase-buffer)
-(bind-key "M-à" 'mark-word)
-(bind-key "C-M-à" 'mark-sexp)
-(bind-key "C-x '" 'ctl-x-4-prefix)
-(bind-key "C-x (" 'ctl-x-5-prefix)
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;    Packages list    ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -55,6 +38,19 @@
   (put 'erase-buffer 'disabled nil)
   (put 'dired-find-alternate-file 'disabled nil)
 
+  ;; Key bindings
+  (bind-key "<f8>" 'bookmark-bmenu-list)
+  (bind-key "C-x &" 'delete-other-windows)
+  (bind-key "C-x à" 'delete-window)
+  (bind-key "C-x \"" 'split-window-right)
+  (bind-key "C-x é" 'split-window-below)
+  (bind-key "C-c c" 'erase-buffer)
+  (bind-key "M-à" 'mark-word)
+  (bind-key "C-M-à" 'mark-sexp)
+  (bind-key "C-x '" 'ctl-x-4-prefix)
+  (bind-key "C-x (" 'ctl-x-5-prefix)
+
+  ;; Builtin packages
   (use-package ibuffer
 	:defer t
 	:init
@@ -529,5 +525,7 @@
   :ensure
   :init
   (modus-themes-load-themes)
+  :custom
+  (modus-themes-syntax (yellow-comments))
   :config
   (modus-themes-load-operandi))
