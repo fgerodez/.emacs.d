@@ -297,10 +297,25 @@
 
 (use-package treemacs
   :ensure
-  :bind 
-  ("<f7>" . treemacs-add-display-current-project-exclusively)
+  :bind
+  ("<f7>" . treemacs-select-window)
+  ("C-x t &" . treemacs-delete-other-windows)
+  ("C-x t t" . treemacs)
+  ("C-x t d" . treemacs-select-directory)
+  ("C-x t B" . treemacs-bookmark)
+  ("C-x t C-f" . treemacs-find-file)
   :config 
   (treemacs-indent-guide-mode))
+
+
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :ensure t)
+
+
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
 
 
 (use-package docker
