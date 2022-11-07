@@ -1,13 +1,12 @@
- 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(bmkp-last-as-first-bookmark-file "~/.emacs.d/bookmarks/all-bookmarks")
- '(custom-enabled-themes '(tango-dark) nil nil "Customized with use-package custom")
+ '(bmkp-last-as-first-bookmark-file "/home/francois/.emacs.d/bookmarks/all-bookmarks")
+ '(custom-enabled-themes '(modus-operandi) nil nil "Customized with use-package custom")
  '(custom-safe-themes
-   '("fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default))
+   '("a37d20710ab581792b7c9f8a075fcbb775d4ffa6c8bce9137c84951b1b453016" "2dc03dfb67fbcb7d9c487522c29b7582da20766c9998aaad5e5b63b5c27eec3f" "7dc296b80df1b29bfc4062d1a66ee91efb462d6a7a934955e94e786394d80b71" "3199be8536de4a8300eaf9ce6d864a35aa802088c0925e944e2b74a574c68fd0" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default))
  '(ibuffer-saved-filter-groups nil)
  '(ibuffer-saved-filters
    '(("dired"
@@ -51,25 +50,27 @@
 	   (mode . gnus-summary-mode)
 	   (mode . gnus-article-mode)))))
  '(package-selected-packages
-   '(js2 dap-php dap-mode php-mode ace-jump-mode esh-autosuggest rainbow-delimiters paredit embark-consult embark lsp dired+ dired consult-tramp marginalia consult orderless vertico bookmark+ quelpa-use-package quelpa systemd trashed yasnippet treemacs-projectile add-node-modules-path prettier-js rjsx-mode csv-mode ibuffer-projectile helpful ## disk-usage vterm projectile iedit which-key lsp-ui flycheck lsp-haskell lsp-mode exec-path-from-shell use-package company docker dockerfile-mode magit haskell-mode)))
+   '(doom-modeline modus-themes elm-mode docker-tramp js2 dap-php dap-mode php-mode ace-jump-mode esh-autosuggest paredit embark-consult embark lsp dired+ dired consult-tramp marginalia consult orderless vertico bookmark+ quelpa-use-package quelpa systemd trashed yasnippet treemacs-projectile prettier-js rjsx-mode csv-mode ibuffer-projectile helpful ## disk-usage vterm projectile iedit which-key lsp-ui flycheck lsp-haskell lsp-mode exec-path-from-shell use-package company docker dockerfile-mode magit haskell-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :extend nil :stipple nil :background "#2e3436" :foreground "#eeeeec" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 120 :width normal :foundry "ADBO" :family "Source Code Pro"))))
+ '(default ((t (:inherit nil :slant normal :weight normal :height 112 :width normal :foundry "SRC" :family "Hack"))))
  '(Info-quoted ((t (:inherit default))))
  '(diredp-compressed-file-name ((t (:foreground "DodgerBlue1"))))
  '(diredp-compressed-file-suffix ((t (:foreground "DodgerBlue1"))))
  '(highlight ((t (:background "#057f9c" :foreground "#2e3436"))))
  '(js2-function-call ((t (:inherit default :foreground "DeepSkyBlue"))))
  '(js2-object-property ((t (:foreground "gold"))))
- '(term-color-black ((t (:background "#4a4f54" :foreground "#1d1f21"))))
- '(term-color-blue ((t (:background "#8bb4f7" :foreground "#427ede"))))
- '(term-color-cyan ((t (:background "#10e8e8" :foreground "#5cd6d6"))))
- '(term-color-green ((t (:background "#98cb35" :foreground "#00ad08"))))
- '(term-color-magenta ((t (:background "#c6bbfd" :foreground "#a36ac7"))))
- '(term-color-red ((t (:background "#fa6161" :foreground "#d60b0b"))))
- '(term-color-white ((t (:background "#ffffff" :foreground "#f2f2f2"))))
- '(term-color-yellow ((t (:background "#ebe050" :foreground "#ffd839")))))
+ ;;'(term-color-black ((t (:background "#4a4f54" :foreground "#1d1f21"))))
+ ;;'(term-color-blue ((t (:background "#8bb4f7" :foreground "#427ede"))))
+ ;;'(term-color-cyan ((t (:background "#10e8e8" :foreground "#5cd6d6"))))
+ ;;'(term-color-green ((t (:background "#98cb35" :foreground "#00ad08"))))
+ ;;'(term-color-magenta ((t (:background "#c6bbfd" :foreground "#a36ac7"))))
+ ;;'(term-color-red ((t (:background "#fa6161" :foreground "#d60b0b"))))
+ ;;'(term-color-white ((t (:background "#ffffff" :foreground "#f2f2f2"))))
+ ;;'(term-color-yellow ((t (:background "#ebe050" :foreground "#ffd839"))))
+ )
+
