@@ -50,7 +50,7 @@
 	   (mode . gnus-summary-mode)
 	   (mode . gnus-article-mode)))))
  '(package-selected-packages
-   '(doom-modeline modus-themes elm-mode docker-tramp js2 dap-php dap-mode php-mode ace-jump-mode esh-autosuggest paredit embark-consult embark lsp dired+ dired consult-tramp marginalia consult orderless vertico bookmark+ quelpa-use-package quelpa systemd trashed yasnippet treemacs-projectile prettier-js rjsx-mode csv-mode ibuffer-projectile helpful ## disk-usage vterm projectile iedit which-key lsp-ui flycheck lsp-haskell lsp-mode exec-path-from-shell use-package company docker dockerfile-mode magit haskell-mode)))
+   '(burly modus-themesq doom-modeline modus-themes elm-mode docker-tramp js2 dap-php dap-mode php-mode ace-jump-mode esh-autosuggest paredit embark-consult embark lsp dired+ dired consult-tramp marginalia consult orderless vertico bookmark+ quelpa-use-package quelpa systemd trashed yasnippet treemacs-projectile prettier-js rjsx-mode csv-mode ibuffer-projectile helpful ## disk-usage vterm projectile iedit which-key lsp-ui flycheck lsp-haskell lsp-mode exec-path-from-shell use-package company docker dockerfile-mode magit haskell-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -63,14 +63,5 @@
  '(diredp-compressed-file-suffix ((t (:foreground "DodgerBlue1"))))
  '(highlight ((t (:background "#057f9c" :foreground "#2e3436"))))
  '(js2-function-call ((t (:inherit default :foreground "DeepSkyBlue"))))
- '(js2-object-property ((t (:foreground "gold"))))
- ;;'(term-color-black ((t (:background "#4a4f54" :foreground "#1d1f21"))))
- ;;'(term-color-blue ((t (:background "#8bb4f7" :foreground "#427ede"))))
- ;;'(term-color-cyan ((t (:background "#10e8e8" :foreground "#5cd6d6"))))
- ;;'(term-color-green ((t (:background "#98cb35" :foreground "#00ad08"))))
- ;;'(term-color-magenta ((t (:background "#c6bbfd" :foreground "#a36ac7"))))
- ;;'(term-color-red ((t (:background "#fa6161" :foreground "#d60b0b"))))
- ;;'(term-color-white ((t (:background "#ffffff" :foreground "#f2f2f2"))))
- ;;'(term-color-yellow ((t (:background "#ebe050" :foreground "#ffd839"))))
- )
+ '(js2-object-property ((t (:foreground "gold")))))
 

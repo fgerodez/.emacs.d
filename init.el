@@ -12,12 +12,6 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;;    Packages list    ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 (use-package emacs
   :init
   ;; Add prompt indicator to `completing-read-multiple'.
@@ -135,21 +129,25 @@
 	(require 'em-tramp)
 	:bind
 	("C-c h" . 'eshell-new)
+	:hook
+	(eshell-mode . (lambda ()
+					 (company-mode -1)))
 	:custom
 	(eshell-prefer-lisp-variables t)
 	(eshell-prefer-lisp-functions t)
 	(eshell-prompt-function (lambda ()
 							  (concat 
-							   (propertize (eshell/pwd) 'face `(:foreground "blue"))
+							   (propertize (eshell/pwd) 'face 'eshell-prompt)
 							   "\n"
 							   (if (= (user-uid) 0)
 								   " # "
-								 (propertize " $" 'face `(:foreground "yellow")))
+								 (propertize " $" 'face 'eshell-prompt))
 							   " "))))
   
   :hook
   (web-mode . subword-mode)  
   (prog-mode . show-paren-mode)
+  (prog-mode . hs-minor-mode)
   (find-file . linum-mode)
   
   :custom
@@ -188,13 +186,11 @@
    '((?\" . ?\")
      (?\{ . ?\}))))
 
-
 (use-package quelpa
   :ensure
   :custom
   (quelpa-checkout-melpa-p nil)
   (quelpa-self-upgrade-p nil))
-
 
 (use-package quelpa-use-package
   :ensure
@@ -202,12 +198,10 @@
   :config
   (quelpa-use-package-activate-advice))
 
-
 (use-package bookmark+
   :ensure
   :after bookmark
   :quelpa (bookmark+ :fetcher github :repo "emacsmirror/bookmark-plus"))
-
 
 (use-package dired+
   :ensure
@@ -217,7 +211,6 @@
   :config 
   (diredp-toggle-find-file-reuse-dir t))
 
-
 (use-package exec-path-from-shell
   :config
   (when (daemonp)
@@ -225,17 +218,18 @@
   :custom
   (exec-path-from-shell-variables '("PATH" "MANPATH" "SSH_AUTH_SOCK")))
 
-
 (use-package avy
   :ensure
   :bind
-  ("M-g f" . avy-goto-line))
-
+  ("M-g a" . avy-goto-line))
 
 (use-package paredit
   :ensure
   :bind
   (:map paredit-mode-map
+		("M-s" . nil)
+		("M-s s" . paredit-split-sexp)
+		("M-s r" . paredit-raise-sexp)
         ("C-M-l" . paredit-recentre-on-sexp)
         ("C-c ( n"   . paredit-add-to-next-list)
         ("C-c ( p"   . paredit-add-to-previous-list)
@@ -248,7 +242,6 @@
 	(eldoc-add-command
 	 'paredit-backward-delete
 	 'paredit-close-round)))
-
 
 (use-package haskell-mode
   :ensure
@@ -264,7 +257,6 @@
   (haskell-mode . lsp-deferred)
   (haskell-mode . interactive-haskell-mode))
 
-
 (use-package php-mode
   :ensure
   :config
@@ -272,12 +264,10 @@
   :hook
   (php-mode . lsp-deferred))
 
-
 (use-package elm-mode
   :ensure
   :hook
   (elm-mode . lsp-deferred))
-
 
 (use-package dap-mode
   :ensure
@@ -285,14 +275,18 @@
   :custom
   (dap-auto-configure-features '(locals expressions)))
 
-
 (use-package iedit
   :ensure
   :bind ("C-;" . iedit-mode))
 
-
 (use-package treemacs
   :ensure
+  :preface
+  (defun my/treemacs-close ()
+	(interactive)
+   	(save-excursion
+	  (treemacs-select-window)
+	  (treemacs-quit)))
   :bind
   ("<f7>" . treemacs-select-window)
   ("C-x t &" . treemacs-delete-other-windows)
@@ -300,36 +294,31 @@
   ("C-x t d" . treemacs-select-directory)
   ("C-x t B" . treemacs-bookmark)
   ("C-x t C-f" . treemacs-find-file)
+  ("C-x t q" . my/treemacs-close)
   :config 
   (treemacs-indent-guide-mode))
-
 
 (use-package treemacs-projectile
   :after (treemacs projectile)
   :ensure t)
 
-
 (use-package treemacs-magit
   :after (treemacs magit)
   :ensure t)
 
-
 (use-package docker
-  :ensure 
+  :ensure
   :bind ("C-c d" . docker)
   :custom
   (docker-container-default-sort-key '("Names" . nil)))
-
 
 (use-package docker-tramp
   :ensure
   :after tramp)
 
-
 (use-package magit
   :ensure
   :bind ("C-c g" . magit-status))
-
 
 (use-package company
   :ensure
@@ -342,7 +331,6 @@
 					   (setq company-backends 
 							 '(company-elisp company-capf company-files company-dabbrev)))))
 
-
 (use-package lsp
   :custom
   (lsp-auto-guess-root t)
@@ -352,30 +340,28 @@
   (lsp-mode . lsp-enable-which-key-integration)
   (lsp-mode . yas-minor-mode))
 
-
 (use-package lsp-ui
   :ensure
   :bind ("<f6>" . lsp-ui-imenu))
-
 
 (use-package less-css-mode
   :hook
   (less-css-mode . lsp-deferred)
   (less-css-mode . electric-indent-local-mode))
 
-
 (use-package projectile
   :ensure
+  :config
+  (projectile-global-mode)
   :custom
+  (projectile-track-known-projects-automatically nil)
   (projectile-require-project-root 'prompt)
   (projectile-switch-project-action #'projectile-dired)
   :bind-keymap
   ("s-p" . projectile-command-map))
 
-
 (use-package vterm
   :ensure
-  :defer t
   :config
   (defalias 'shell 'vterm)
   :hook
@@ -383,11 +369,12 @@
 				  (linum-mode 0)
 				  (setq-local nobreak-char-display nil))))
 
-
 (use-package which-key
   :ensure
+  :custom
+  (which-key-add-column-padding 2)
+  (which-key-max-description-length nil)
   :hook (prog-mode . which-key-mode))
-
 
 (use-package helpful
   :ensure
@@ -399,7 +386,6 @@
   ("C-h F" . 'helpful-function)
   ("C-h C" . 'helpful-command))
 
-
 (use-package js2-mode
   :ensure
   :defer t
@@ -409,13 +395,11 @@
   (js2-mode-show-parse-errors nil)
   (js2-mode-show-strict-warnings nil))
 
-
 (use-package prettier-js
   :ensure
   :defer t
   :custom
   (prettier-js-show-errors 'echo))
-
 
 (use-package rjsx-mode
   :ensure
@@ -427,7 +411,6 @@
 				 (electric-indent-local-mode)
 				 (prettier-js-mode)
 				 (setq tab-width 2))))
-
 
 (use-package vertico
   :ensure
@@ -443,14 +426,12 @@
 		("<next>" . vertico-scroll-down)
 		("<prior>" . vertico-scroll-up)))
 
-
 (use-package orderless
   :ensure
   :custom
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles partial-completion)))))
-
 
 (use-package embark
   :ensure
@@ -461,11 +442,9 @@
   (:map minibuffer-local-map 
 		("M-;" . embark-dwim)))
 
-
 (use-package ace-window
   :ensure
   :bind ("C-x o" . ace-window))
-
 
 (use-package marginalia
   :ensure
@@ -474,22 +453,61 @@
   :custom
   (marginalia-mode t))
 
-
 (use-package consult
-  :defer t
+  :init
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+		
   :config
   (consult-customize consult-ripgrep consult-git-grep consult-grep :preview-key nil)
   (setq completion-in-region-function #'consult-completion-in-region)
-  :bind
-  ("C-c s" . 'consult-line)
-  ("C-c m" . 'consult-mark)
-  ("C-c i" . 'consult-imenu)
-  ("C-c l" . 'consult-goto-line)
-  ("C-c r" . 'consult-ripgrep)
-  ("C-c f" . 'consult-find)
-  ("C-c e" . 'consult-register)
-  ("C-x b" . 'consult-buffer))
 
+  :bind
+  (;; Custom bindings
+   ("C-c s" . consult-line)
+   ("C-c k" . consult-kmacro)
+   ("C-c m" . consult-mode-command)
+   ("C-c r" . consult-ripgrep)
+   ("C-c f" . consult-find)
+   ("C-c e" . consult-register)
+   ;; C-x bindings overrides 
+   ("C-x 4 b" . consult-buffer-other-window)
+   ("C-x 5 b" . consult-buffer-other-frame)
+   ("C-x r b" . consult-bookmark) 
+   ("C-x b" . 'consult-buffer)
+   ;; Other custom bindings
+   ("M-y" . consult-yank-pop)
+   ;; M-g bindings
+   ("M-g e" . consult-compile-error)
+   ("M-g f" . consult-flymake)
+   ("M-g M-g" . consult-goto-line)
+   ("M-g g" . consult-goto-line)
+   ("M-g i" . consult-imenu)
+   ("M-g I" . consult-imenu-multi)
+   ("M-g o" . consult-outline)
+   ("M-g k" . consult-global-mark)
+   ("M-g m" . consult-mark)
+   ;; M-s bindings (search-map)
+   ("M-s d" . consult-find)
+   ("M-s G" . consult-git-grep)
+   ("M-s r" . consult-ripgrep)
+   ("M-s l" . consult-line)
+   ("M-s L" . consult-line-multi)
+   ("M-s m" . consult-multi-occur)
+   ("M-s k" . consult-keep-lines)
+   ("M-s u" . consult-focus-lines)
+   ;; Isearch integration
+   ("M-s e" . consult-isearch-history)
+   :map isearch-mode-map
+   ("M-e" . consult-isearch-history)        
+   ("M-s e" . consult-isearch-history)      
+   ("M-s l" . consult-line)                 
+   ("M-s L" . consult-line-multi)           
+   ;; Minibuffer history
+   :map minibuffer-local-map
+   ("M-s" . consult-history)                
+   ("M-r" . consult-history)))
 
 (use-package consult-tramp
   :ensure
@@ -501,7 +519,6 @@
   :quelpa 
   (consult-tramp :fetcher github :repo "Ladicle/consult-tramp"))
 
-
 (use-package embark-consult
   :ensure
   :defer t
@@ -509,23 +526,25 @@
   :bind (:map minibuffer-local-map
 			  ("M-o" . embark-export)))
 
-
 (use-package esh-autosuggest
   :ensure
   :hook (eshell-mode . esh-autosuggest-mode))
-
 
 (use-package doom-modeline
   :ensure
   :init
   (doom-modeline-mode))
 
-
 (use-package modus-themes
   :ensure
   :init
   (modus-themes-load-themes)
   :custom
-  (modus-themes-syntax (yellow-comments))
+  (modus-themes-syntax '(yellow-comments))
   :config
   (modus-themes-load-operandi))
+
+(use-package burly
+  :ensure
+  :defer t
+  :quelpa (burly :fetcher github :repo "alphapapa/burly.el"))
