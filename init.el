@@ -43,13 +43,22 @@
   (bind-key "C-M-à" 'mark-sexp)
   (bind-key "C-x '" 'ctl-x-4-prefix)
   (bind-key "C-x (" 'ctl-x-5-prefix)
-
+  
   ;; Builtin packages
+  (use-package modus-themes
+	:init
+	(modus-themes-load-themes)
+	:custom
+	(modus-themes-syntax '(yellow-comments))
+	:config
+	(modus-themes-load-operandi))
+  
   (use-package ibuffer
 	:defer t
 	:init
 	(defalias 'list-buffers 'ibuffer)
 	:custom
+	(ibuffer-show-empty-filter-groups nil)
 	(ibuffer-formats
 	 '((mark modified read-only locked " "
 			 (name 18 -1 :left)
@@ -60,7 +69,10 @@
 			 " " filename-and-process)
 	   (mark " "
 			 (name 16 -1)
-			 " " filename))))
+			 " " filename)))
+	:hook
+	(ibuffer-mode . (lambda ()
+					  (ibuffer-auto-mode))))
 
 
   (use-package isearch
@@ -99,7 +111,12 @@
 	(dired-omit-verbose nil)
 	(dired-use-ls-dired nil))
 
+  
+  (use-package autorevert
+	:custom
+	(auto-revert-remote-files t))
 
+  
   (use-package tramp
 	:defer t
 	:custom
@@ -109,14 +126,13 @@
 	(tramp-default-method "ssh")
 	(tramp-use-ssh-controlmaster-options nil)
 	(tramp-remote-process-environment
-	 '("ENV=" "TMOUT=0" "LC_CTYPE=" "CDPATH=" "HISTORY=" "MAIL=" "MAILCHECK=" "MAILPATH=" "PAGER=cat" "autocorrect=" "correct=" "HISTFILE=/dev/null"))
+	 '("ENV=" "TMOUT=0" "LC_ALL=fr_FR.UTF-8" "CDPATH=" "HISTORY=" "MAIL=" "MAILCHECK=" "MAILPATH=" "PAGER=cat" "autocorrect=" "correct=" "HISTFILE=/dev/null"))
 	:config
 	(with-eval-after-load 'vc
 	  (customize-set-value 'vc-ignore-dir-regexp 
 						   (format "\\(%s\\)\\|\\(%s\\)"
 								   vc-ignore-dir-regexp
 								   tramp-file-name-regexp))))
-
 
   (use-package eshell
 	:defer t
@@ -201,6 +217,11 @@
 (use-package bookmark+
   :ensure
   :after bookmark
+  :config
+  (defun bmkp-root-or-sudo-logged-p ()
+	"The detection of root is broken because you can be logged in as root on a remote host
+     and not logged in as root on your localhost."
+	nil)
   :quelpa (bookmark+ :fetcher github :repo "emacsmirror/bookmark-plus"))
 
 (use-package dired+
@@ -260,14 +281,17 @@
 (use-package php-mode
   :ensure
   :config
-  (setq lsp-enable-file-watchers nil)
-  :hook
-  (php-mode . lsp-deferred))
+  (setq lsp-enable-file-watchers nil))
 
 (use-package elm-mode
   :ensure
+  :custom
+  (elm-sort-imports-on-save t)
   :hook
-  (elm-mode . lsp-deferred))
+  (elm-mode . (lambda () 
+				(lsp-deferred)
+				(elm-format-on-save-mode)
+				(electric-indent-mode nil))))
 
 (use-package dap-mode
   :ensure
@@ -458,11 +482,33 @@
   ;; Use Consult to select xref locations with preview
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
-		
+  
   :config
   (consult-customize consult-ripgrep consult-git-grep consult-grep :preview-key nil)
+
+  (consult-customize consult-bookmark consult-recent-file consult-xref
+					 consult--source-bookmark consult--source-file-register
+					 consult--source-recent-file consult--source-project-recent-file :preview-key '(:debounce 0.4 any))
+
   (setq completion-in-region-function #'consult-completion-in-region)
 
+  (defun consult-buffer-state-no-tramp ()
+	"Buffer state function that doesn't preview Tramp buffers."
+	(let ((orig-state (consult--buffer-state))
+          (filter (lambda (action cand)
+					(if (and cand
+							 (or (eq action 'return)
+								 (let ((buffer (get-buffer cand)))
+                                   (and buffer
+										(not (file-remote-p (buffer-local-value 'default-directory buffer)))))))
+						cand
+                      nil))))
+      (lambda (action cand)
+		(funcall orig-state action (funcall filter action cand)))))
+
+  (setq consult--source-buffer
+		(plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
+  
   :bind
   (;; Custom bindings
    ("C-c s" . consult-line)
@@ -535,16 +581,4 @@
   :init
   (doom-modeline-mode))
 
-(use-package modus-themes
-  :ensure
-  :init
-  (modus-themes-load-themes)
-  :custom
-  (modus-themes-syntax '(yellow-comments))
-  :config
-  (modus-themes-load-operandi))
-
-(use-package burly
-  :ensure
-  :defer t
-  :quelpa (burly :fetcher github :repo "alphapapa/burly.el"))
+(use-package vcl-mode)
