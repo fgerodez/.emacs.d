@@ -8,9 +8,8 @@
       '(("gnu" . "https://elpa.gnu.org/packages/")
         ("melpa" . "https://melpa.org/packages/")))
 
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+(unless (package-installed-p 'vc-use-package)
+  (package-vc-install "https://github.com/slotThe/vc-use-package"))
 
 (use-package emacs
   :init
@@ -32,6 +31,8 @@
   (put 'erase-buffer 'disabled nil)
   (put 'dired-find-alternate-file 'disabled nil)
 
+  (global-display-line-numbers-mode 1)
+  
   ;; Key bindings
   (bind-key "<f8>" 'bookmark-bmenu-list)
   (bind-key "C-x &" 'delete-other-windows)
@@ -52,6 +53,17 @@
 	(modus-themes-syntax '(yellow-comments))
 	:config
 	(modus-themes-load-operandi))
+
+  
+  (use-package project
+	:config
+	(defun project-disable-vc-tramp (orig-fun dir)
+	  (if (tramp-tramp-file-p dir)
+		  nil
+		(funcall orig-fun dir)))
+
+	(advice-add 'project-try-vc :around #'project-disable-vc-tramp))
+
   
   (use-package ibuffer
 	:defer t
@@ -69,10 +81,7 @@
 			 " " filename-and-process)
 	   (mark " "
 			 (name 16 -1)
-			 " " filename)))
-	:hook
-	(ibuffer-mode . (lambda ()
-					  (ibuffer-auto-mode))))
+			 " " filename))))
 
 
   (use-package isearch
@@ -101,6 +110,7 @@
 	:hook
 	(dired-mode . dired-omit-mode)
 	:custom
+	(dired-dwim-target t)
 	(dired-auto-revert-buffer t)
 	(dired-create-destination-dirs t)
 	(dired-guess-shell-alist-user
@@ -108,8 +118,7 @@
 	   ("\\.ods\\|.odt\\|.doc\\|.xls\\|.ppt\\|.docx\\|.pptx\\|.xlsx" "libreoffice")
 	   ("\\.avi\\|.mp4\\|.mpg" "vlc")))
 	(dired-listing-switches "-Alvh --group-directories-first")
-	(dired-omit-verbose nil)
-	(dired-use-ls-dired nil))
+	(dired-omit-verbose nil))
 
   
   (use-package autorevert
@@ -164,7 +173,6 @@
   (web-mode . subword-mode)  
   (prog-mode . show-paren-mode)
   (prog-mode . hs-minor-mode)
-  (find-file . linum-mode)
   
   :custom
   (max-lisp-eval-depth 8000)
@@ -182,7 +190,6 @@
   (minibuffer-electric-default-mode t)
   (global-prettify-symbols-mode t)
   (bookmark-save-flag 1)
-  (display-buffer-alist '(("\\*Async Shell Command\\*.*" . '(#'display-buffer-no-window))))
   (savehist-mode t)
   (recentf-mode t)
   (read-extended-command-predicate 'command-completion-default-include-p)
@@ -202,33 +209,18 @@
    '((?\" . ?\")
      (?\{ . ?\}))))
 
-(use-package quelpa
-  :ensure
-  :custom
-  (quelpa-checkout-melpa-p nil)
-  (quelpa-self-upgrade-p nil))
-
-(use-package quelpa-use-package
-  :ensure
-  :after quelpa
-  :config
-  (quelpa-use-package-activate-advice))
-
 (use-package bookmark+
-  :ensure
   :after bookmark
   :config
   (defun bmkp-root-or-sudo-logged-p ()
 	"The detection of root is broken because you can be logged in as root on a remote host
      and not logged in as root on your localhost."
 	nil)
-  :quelpa (bookmark+ :fetcher github :repo "emacsmirror/bookmark-plus"))
+  :vc (:fetcher github :repo "emacsmirror/bookmark-plus"))
 
 (use-package dired+
-  :ensure
   :after dired
-  :quelpa 
-  (dired+ :fetcher url :url "https://www.emacswiki.org/emacs/download/dired+.el")
+  :vc (:fetcher github :repo "emacsmirror/dired-plus")
   :config 
   (diredp-toggle-find-file-reuse-dir t))
 
@@ -240,12 +232,10 @@
   (exec-path-from-shell-variables '("PATH" "MANPATH" "SSH_AUTH_SOCK")))
 
 (use-package avy
-  :ensure
   :bind
   ("M-g a" . avy-goto-line))
 
 (use-package paredit
-  :ensure
   :bind
   (:map paredit-mode-map
 		("M-s" . nil)
@@ -265,7 +255,6 @@
 	 'paredit-close-round)))
 
 (use-package haskell-mode
-  :ensure
   :custom
   (haskell-indentation-electric-flag t)
   (haskell-process-auto-import-loaded-modules t)
@@ -275,36 +264,19 @@
   :hook
   (haskell-mode . haskell-decl-scan-mode)
   (haskell-mode . highlight-uses-mode)
-  (haskell-mode . lsp-deferred)
   (haskell-mode . interactive-haskell-mode))
 
-(use-package php-mode
-  :ensure
-  :config
-  (setq lsp-enable-file-watchers nil))
-
-(use-package elm-mode
-  :ensure
-  :custom
-  (elm-sort-imports-on-save t)
-  :hook
-  (elm-mode . (lambda () 
-				(lsp-deferred)
-				(elm-format-on-save-mode)
-				(electric-indent-mode nil))))
+(use-package php-mode)
 
 (use-package dap-mode
-  :ensure
   :defer t
   :custom
   (dap-auto-configure-features '(locals expressions)))
 
 (use-package iedit
-  :ensure
   :bind ("C-;" . iedit-mode))
 
 (use-package treemacs
-  :ensure
   :preface
   (defun my/treemacs-close ()
 	(interactive)
@@ -322,30 +294,18 @@
   :config 
   (treemacs-indent-guide-mode))
 
-(use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
-
 (use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
+  :after (treemacs magit))
 
 (use-package docker
-  :ensure
   :bind ("C-c d" . docker)
   :custom
   (docker-container-default-sort-key '("Names" . nil)))
 
-(use-package docker-tramp
-  :ensure
-  :after tramp)
-
 (use-package magit
-  :ensure
   :bind ("C-c g" . magit-status))
 
 (use-package company
-  :ensure
   :custom
   (company-idle-delay 0.0)
   (company-minimum-prefix-length 3)
@@ -355,53 +315,27 @@
 					   (setq company-backends 
 							 '(company-elisp company-capf company-files company-dabbrev)))))
 
-(use-package lsp
-  :custom
-  (lsp-auto-guess-root t)
-  (lsp-lens-enable nil)
-  (lsp-server-install-dir "~/.cache/lsp")
-  :hook 
-  (lsp-mode . lsp-enable-which-key-integration)
-  (lsp-mode . yas-minor-mode))
-
-(use-package lsp-ui
-  :ensure
-  :bind ("<f6>" . lsp-ui-imenu))
-
 (use-package less-css-mode
   :hook
-  (less-css-mode . lsp-deferred)
   (less-css-mode . electric-indent-local-mode))
 
-(use-package projectile
-  :ensure
-  :config
-  (projectile-global-mode)
-  :custom
-  (projectile-track-known-projects-automatically nil)
-  (projectile-require-project-root 'prompt)
-  (projectile-switch-project-action #'projectile-dired)
-  :bind-keymap
-  ("s-p" . projectile-command-map))
-
 (use-package vterm
-  :ensure
   :config
   (defalias 'shell 'vterm)
+  :custom
+  (vterm-buffer-name-string "*[v] %s*")
   :hook
   (vterm-mode . (lambda () 
-				  (linum-mode 0)
+				  (display-line-numbers-mode -1)
 				  (setq-local nobreak-char-display nil))))
 
 (use-package which-key
-  :ensure
   :custom
   (which-key-add-column-padding 2)
   (which-key-max-description-length nil)
   :hook (prog-mode . which-key-mode))
 
 (use-package helpful
-  :ensure
   :defer t
   :bind
   ("C-h f" . 'helpful-callable)
@@ -411,7 +345,6 @@
   ("C-h C" . 'helpful-command))
 
 (use-package js2-mode
-  :ensure
   :defer t
   :custom
   (js-indent-level 2)
@@ -420,13 +353,11 @@
   (js2-mode-show-strict-warnings nil))
 
 (use-package prettier-js
-  :ensure
   :defer t
   :custom
   (prettier-js-show-errors 'echo))
 
 (use-package rjsx-mode
-  :ensure
   :defer t
   :mode "\\.js"
   :hook 
@@ -437,7 +368,6 @@
 				 (setq tab-width 2))))
 
 (use-package vertico
-  :ensure
   :hook 
   (rfn-eshadow-update-overlay . vertico-directory-tidy)
   :custom
@@ -451,14 +381,12 @@
 		("<prior>" . vertico-scroll-up)))
 
 (use-package orderless
-  :ensure
   :custom
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package embark
-  :ensure
   :custom 
   (embark-quit-after-action nil)
   :bind 
@@ -467,11 +395,14 @@
 		("M-;" . embark-dwim)))
 
 (use-package ace-window
-  :ensure
-  :bind ("C-x o" . ace-window))
+  :custom
+  (aw-keys  '(?q ?s ?d ?f ?g ?h ?j ?k ?l))
+  (aw-scope 'frame)
+  (aw-ignore-current t)
+  :bind
+  ("M-o" . ace-window))
 
 (use-package marginalia
-  :ensure
   :bind (:map minibuffer-local-map
 			  ("M-A" . marginalia-cycle))
   :custom
@@ -556,28 +487,24 @@
    ("M-r" . consult-history)))
 
 (use-package consult-tramp
-  :ensure
   :bind
   ("C-c o" . 'consult-tramp)
   :custom
   (consult-tramp-enable-shosts nil)
   (consult-tramp-method "ssh")
-  :quelpa 
-  (consult-tramp :fetcher github :repo "Ladicle/consult-tramp"))
+  :vc
+  (:fetcher github :repo "Ladicle/consult-tramp"))
 
 (use-package embark-consult
-  :ensure
   :defer t
   :after (embark consult)
   :bind (:map minibuffer-local-map
 			  ("M-o" . embark-export)))
 
 (use-package esh-autosuggest
-  :ensure
   :hook (eshell-mode . esh-autosuggest-mode))
 
 (use-package doom-modeline
-  :ensure
   :init
   (doom-modeline-mode))
 
