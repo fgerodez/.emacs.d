@@ -4,10 +4,15 @@
 (load custom-file)
 
 (require 'package)
+
+;; ELPA (Emacs Lisp Package Archive) is the official emacs packages repository managed via package.el.
+;; MELPA is a compatible repository containing a lot of user created packages (not curated by emacs).
 (setq package-archives
       '(("gnu" . "https://elpa.gnu.org/packages/")
         ("melpa" . "https://melpa.org/packages/")))
 
+;; Installs a small use-package helper to download packages from source code repositories.
+;; Will be included with emacs from version 30.
 (unless (package-installed-p 'vc-use-package)
   (package-vc-install "https://github.com/slotThe/vc-use-package"))
 
@@ -53,7 +58,6 @@
 	(modus-themes-syntax '(yellow-comments))
 	:config
 	(modus-themes-load-operandi))
-
   
   (use-package project
 	:config
@@ -120,23 +124,49 @@
 	(dired-listing-switches "-Alvh --group-directories-first")
 	(dired-omit-verbose nil))
 
-  
+  ;; Activates autorevert for remote files.
+  ;; Autorevert checks the modified timestamp of files every x seconds
   (use-package autorevert
 	:custom
 	(auto-revert-remote-files t))
 
-  
+  ;; Customizations for the tramp core emacs package.
+  ;; Tramp is used to connect to remote or local machine via various methods (ssh, docker, su...)
   (use-package tramp
 	:defer t
 	:custom
+
+	;; Puts autosave files in a local directory (faster and does not clutter remote hosts)
 	(tramp-auto-save-directory "~/.cache/emacs/tramp")
+
+	;; Puts backups in a local directory as well
 	(tramp-backup-directory-alist '(("." . "~/.cache/emacs/backups")))
-	(tramp-connection-properties nil)
-	(tramp-default-method "ssh")
-	(tramp-use-ssh-controlmaster-options nil)
+
+	;; Modifies default tramp pattern to recognize the values added by vterm directory tracking.
+	;; Without this tramp is confused and can not recognize where the prompt ends.
+	;; The added part is \\(?:\x1b][0-9;A]*.*\x1b\\\\\\)*
+	(tramp-shell-prompt-pattern "\\(?:^\\|\\)[^]\n#-%>]*#?[]#-%>][[:blank:]]*\\(?:\\[[;[:digit:]]*[[:alpha:]][[:blank:]]*\\)*\\(?:\x1b][0-9;A]*.*\x1b\\\\\\)*")
+
 	(tramp-remote-process-environment
 	 '("ENV=" "TMOUT=0" "LC_ALL=fr_FR.UTF-8" "CDPATH=" "HISTORY=" "MAIL=" "MAILCHECK=" "MAILPATH=" "PAGER=cat" "autocorrect=" "correct=" "HISTFILE=/dev/null"))
+
 	:config
+
+	;; Profile definition to use bash as remote shell
+	(connection-local-set-profile-variables
+	 'remote-bash
+	 '((shell-file-name . "/bin/bash")))
+
+	;; Applies remote bash to pi connections
+	(connection-local-set-profiles
+	 '(:application tramp :machine "pi")
+	 'remote-bash)
+
+	;; Proxies su and sudo via ssh on pi
+	(add-to-list 'tramp-default-proxies-alist
+				 '("pi" "root" "/ssh:pi:"))
+
+	;; Prevents vc refresh on tramp remote directories
 	(with-eval-after-load 'vc
 	  (customize-set-value 'vc-ignore-dir-regexp 
 						   (format "\\(%s\\)\\|\\(%s\\)"
@@ -291,7 +321,9 @@
   ("C-x t B" . treemacs-bookmark)
   ("C-x t C-f" . treemacs-find-file)
   ("C-x t q" . my/treemacs-close)
-  :config 
+  :config
+  (treemacs-define-RET-action 'file-node-open   #'treemacs-visit-node-in-most-recently-used-window)
+  (treemacs-define-RET-action 'file-node-closed #'treemacs-visit-node-in-most-recently-used-window)
   (treemacs-indent-guide-mode))
 
 (use-package treemacs-magit
@@ -305,25 +337,43 @@
 (use-package magit
   :bind ("C-c g" . magit-status))
 
+;;
+;; Company text and code completion package.
+;;
 (use-package company
   :custom
+  ;; Does not wait before showing the completion popin.
   (company-idle-delay 0.0)
+
+  ;; Shows completion popin after a minimum input of 3 characters.
   (company-minimum-prefix-length 3)
-  :hook 
-  (after-init . global-company-mode)
-  (emacs-lisp-mode . (lambda () 
-					   (setq company-backends 
-							 '(company-elisp company-capf company-files company-dabbrev)))))
+
+  ;; Activates dabbrev-code for all modes.
+  ;; It handles words with underscores correctly as one word.
+  (company-dabbrev-code-modes t)
+
+  ;; Uses dabbrev-code completion for comments and non code texts.
+  (company-dabbrev-code-everywhere t)
+  
+  :hook
+  ;; Activates company-mode globally
+  (after-init . global-company-mode))
 
 (use-package less-css-mode
   :hook
   (less-css-mode . electric-indent-local-mode))
 
 (use-package vterm
-  :config
-  (defalias 'shell 'vterm)
+;  :config
+;  (defalias 'shell 'vterm)
   :custom
   (vterm-buffer-name-string "*[v] %s*")
+  (vterm-eval-cmds '(("find-file" find-file)
+					 ("view-file" view-file)
+					 ("message" message)
+					 ("vterm-clear-scrollback" vterm-clear-scrollback)))
+  (vterm-tramp-shells '(("docker" "/bin/sh")
+						("ssh" "/bin/bash")))
   :hook
   (vterm-mode . (lambda () 
 				  (display-line-numbers-mode -1)
