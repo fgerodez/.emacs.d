@@ -12,10 +12,13 @@
         ("melpa" . "https://melpa.org/packages/")))
 
 ;; Installs a small use-package helper to download packages from source code repositories.
-;; Will be included with emacs from version 30.
+;; Will be included with emacs in version 30.
 (unless (package-installed-p 'vc-use-package)
   (package-vc-install "https://github.com/slotThe/vc-use-package"))
 
+;;
+;; Emacs and core emacs packages customizations
+;;
 (use-package emacs
   :init
   ;; Add prompt indicator to `completing-read-multiple'.
@@ -50,15 +53,22 @@
   (bind-key "C-x '" 'ctl-x-4-prefix)
   (bind-key "C-x (" 'ctl-x-5-prefix)
   
-  ;; Builtin packages
+  ;;
+  ;; Modus themes package
+  ;;
   (use-package modus-themes
 	:init
 	(modus-themes-load-themes)
+	
 	:custom
 	(modus-themes-syntax '(yellow-comments))
+	
 	:config
 	(modus-themes-load-operandi))
-  
+
+  ;;
+  ;; Project management package
+  ;;
   (use-package project
 	:config
 	(defun project-disable-vc-tramp (orig-fun dir)
@@ -66,15 +76,22 @@
 		  nil
 		(funcall orig-fun dir)))
 
+	;; Disables slow vc operations for directories managed by tramp
 	(advice-add 'project-try-vc :around #'project-disable-vc-tramp))
 
-  
+  ;;
+  ;; Improved buffer list package
+  ;;
   (use-package ibuffer
 	:defer t
+
 	:init
+	;; Redirects list-buffers to call ibuffer
 	(defalias 'list-buffers 'ibuffer)
+	
 	:custom
 	(ibuffer-show-empty-filter-groups nil)
+
 	(ibuffer-formats
 	 '((mark modified read-only locked " "
 			 (name 18 -1 :left)
@@ -134,8 +151,8 @@
   ;; Tramp is used to connect to remote or local machine via various methods (ssh, docker, su...)
   (use-package tramp
 	:defer t
-	:custom
 
+	:custom
 	;; Puts autosave files in a local directory (faster and does not clutter remote hosts)
 	(tramp-auto-save-directory "~/.cache/emacs/tramp")
 
@@ -151,7 +168,6 @@
 	 '("ENV=" "TMOUT=0" "LC_ALL=fr_FR.UTF-8" "CDPATH=" "HISTORY=" "MAIL=" "MAILCHECK=" "MAILPATH=" "PAGER=cat" "autocorrect=" "correct=" "HISTFILE=/dev/null"))
 
 	:config
-
 	;; Profile definition to use bash as remote shell
 	(connection-local-set-profile-variables
 	 'remote-bash
@@ -175,19 +191,25 @@
 
   (use-package eshell
 	:defer t
+
 	:preface
 	(defun eshell-new ()
 	  "Open a new instance of eshell."
 	  (interactive)
 	  (eshell 'N))
+
 	:config
 	(require 'em-tramp)
+
 	:bind
 	("C-c h" . 'eshell-new)
+
 	:hook
 	(eshell-mode . (lambda ()
 					 (company-mode -1)))
+
 	:custom
+
 	(eshell-prefer-lisp-variables t)
 	(eshell-prefer-lisp-functions t)
 	(eshell-prompt-function (lambda ()
@@ -220,6 +242,7 @@
   (minibuffer-electric-default-mode t)
   (global-prettify-symbols-mode t)
   (bookmark-save-flag 1)
+  (bookmark-version-control 1)
   (savehist-mode t)
   (recentf-mode t)
   (read-extended-command-predicate 'command-completion-default-include-p)
@@ -239,25 +262,41 @@
    '((?\" . ?\")
      (?\{ . ?\}))))
 
+;;
+;; Bookmark+ adds addtional functionalities to the core bookmark package.
+;; 
 (use-package bookmark+
   :after bookmark
+
   :config
   (defun bmkp-root-or-sudo-logged-p ()
 	"The detection of root is broken because you can be logged in as root on a remote host
      and not logged in as root on your localhost."
 	nil)
-  :vc (:fetcher github :repo "emacsmirror/bookmark-plus"))
+  
+  :vc (:fetcher github :repo "emacsmirror/bookmark-plus")
 
+  :hook
+  (bookmark-bmenu-mode . (lambda ()
+						   (display-line-numbers-mode -1))))
+
+;;
+;; Dired+ adds addtional functionalities to dired.
+;;
 (use-package dired+
   :after dired
-  :vc (:fetcher github :repo "emacsmirror/dired-plus")
+
+  :vc
+  (:fetcher github :repo "emacsmirror/dired-plus")
+
   :config 
   (diredp-toggle-find-file-reuse-dir t))
 
 (use-package exec-path-from-shell
   :config
   (when (daemonp)
-	(exec-path-from-shell-initialize))  
+	(exec-path-from-shell-initialize))
+  
   :custom
   (exec-path-from-shell-variables '("PATH" "MANPATH" "SSH_AUTH_SOCK")))
 
@@ -276,8 +315,10 @@
         ("C-c ( p"   . paredit-add-to-previous-list)
         ("C-c ( j"   . paredit-join-with-next-list)
         ("C-c ( J"   . paredit-join-with-previous-list))
+
   :hook 
   ((emacs-lisp-mode lisp-mode) . paredit-mode)
+  
   :config
   (with-eval-after-load 'eldoc
 	(eldoc-add-command
@@ -364,14 +405,17 @@
   (less-css-mode . electric-indent-local-mode))
 
 (use-package vterm
-;  :config
-;  (defalias 'shell 'vterm)
+  :config
+  (defalias 'shell 'vterm)
+
   :custom
   (vterm-buffer-name-string "*[v] %s*")
+
   (vterm-eval-cmds '(("find-file" find-file)
 					 ("view-file" view-file)
 					 ("message" message)
 					 ("vterm-clear-scrollback" vterm-clear-scrollback)))
+
   (vterm-tramp-shells '(("docker" "/bin/sh")
 						("ssh" "/bin/bash")))
   :hook
@@ -383,7 +427,9 @@
   :custom
   (which-key-add-column-padding 2)
   (which-key-max-description-length nil)
-  :hook (prog-mode . which-key-mode))
+  
+  :hook
+  (prog-mode . which-key-mode))
 
 (use-package helpful
   :defer t
@@ -412,7 +458,6 @@
   :mode "\\.js"
   :hook 
   (rjsx-mode . (lambda ()
-				 (lsp-deferred)
 				 (electric-indent-local-mode)
 				 (prettier-js-mode)
 				 (setq tab-width 2))))
@@ -559,3 +604,7 @@
   (doom-modeline-mode))
 
 (use-package vcl-mode)
+
+(use-package eldoc-box
+  :hook (eglot-managed-mode . eldoc-box-hover-mode)
+  :ensure t)
