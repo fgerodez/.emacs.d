@@ -16,6 +16,9 @@
 (unless (package-installed-p 'vc-use-package)
   (package-vc-install "https://github.com/slotThe/vc-use-package"))
 
+;; The following variable must be set before use package is used / loaded
+(setq use-package-enable-imenu-support t)
+
 ;;
 ;; Emacs and core emacs packages customizations
 ;;
@@ -77,21 +80,27 @@
 		(funcall orig-fun dir)))
 
 	;; Disables slow vc operations for directories managed by tramp
-	(advice-add 'project-try-vc :around #'project-disable-vc-tramp))
+	(advice-add 'project-try-vc :around #'project-disable-vc-tramp)
+
+	:custom
+	(project-switch-commands '((project-find-file "Find file")
+							   (project-find-regexp "Find regexp")
+							   (project-dired "Dired")
+							   (project-shell "Shell"))))
 
   ;;
   ;; Improved buffer list package
   ;;
   (use-package ibuffer
 	:defer t
-
+	
 	:init
 	;; Redirects list-buffers to call ibuffer
 	(defalias 'list-buffers 'ibuffer)
 	
 	:custom
 	(ibuffer-show-empty-filter-groups nil)
-
+	
 	(ibuffer-formats
 	 '((mark modified read-only locked " "
 			 (name 18 -1 :left)
@@ -103,8 +112,7 @@
 	   (mark " "
 			 (name 16 -1)
 			 " " filename))))
-
-
+  
   (use-package isearch
 	:preface
 	(defun my/isearch-copy-matches ()
@@ -139,6 +147,7 @@
 	   ("\\.ods\\|.odt\\|.doc\\|.xls\\|.ppt\\|.docx\\|.pptx\\|.xlsx" "libreoffice")
 	   ("\\.avi\\|.mp4\\|.mpg" "vlc")))
 	(dired-listing-switches "-Alvh --group-directories-first")
+	(dired-omit-files "\\`[.]?#\\|\\`[.][.]?\\'\\|\\`[.]")
 	(dired-omit-verbose nil))
 
   ;; Activates autorevert for remote files.
@@ -220,6 +229,16 @@
 								   " # "
 								 (propertize " $" 'face 'eshell-prompt))
 							   " "))))
+
+  (use-package eglot
+	:custom
+	(eglot-autoshutdown t) 
+	(eglot-confirm-server-initiated-edits nil))
+
+  (use-package org
+	:custom
+	(org-directory "~/Nextcloud/documents/Perso/Notes")
+	(org-default-notes-file (concat org-directory "/notes.org")))
   
   :hook
   (web-mode . subword-mode)  
@@ -227,6 +246,7 @@
   (prog-mode . hs-minor-mode)
   
   :custom
+  (indent-tab-mode nil)
   (max-lisp-eval-depth 8000)
   (max-specpdl-size 16000)
   (inhibit-startup-screen t)
@@ -408,6 +428,9 @@
   :config
   (defalias 'shell 'vterm)
 
+  :bind
+  ("C-c v" . 'vterm)
+  
   :custom
   (vterm-buffer-name-string "*[v] %s*")
 
