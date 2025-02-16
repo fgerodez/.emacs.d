@@ -4,6 +4,8 @@
 (load custom-file)
 
 (require 'package)
+(package-refresh-contents)
+(package-install-selected-packages 'NOCONFIRM)
 
 ;; ELPA (Emacs Lisp Package Archive) is the official emacs packages repository managed via package.el.
 ;; MELPA is a compatible repository containing a lot of user created packages (not curated by emacs).
@@ -19,9 +21,6 @@
 ;; The following variable must be set before use package is used / loaded
 (setq use-package-enable-imenu-support t)
 
-;;
-;; Emacs and core emacs packages customizations
-;;
 (use-package emacs
   :init
   ;; Add prompt indicator to `completing-read-multiple'.
@@ -34,7 +33,6 @@
                   (car args))
           (cdr args)))
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
-
   (setq frame-title-format "%b")
   (setq read-process-output-max (* 1024 1024))
 
@@ -55,35 +53,29 @@
   (bind-key "C-M-à" 'mark-sexp)
   (bind-key "C-x '" 'ctl-x-4-prefix)
   (bind-key "C-x (" 'ctl-x-5-prefix)
-  
+
   ;;
   ;; Modus themes package
   ;;
   (use-package modus-themes
-	:init
-	(modus-themes-load-themes)
-	
-	:custom
-	(modus-themes-syntax '(yellow-comments))
-	
-	:config
-	(modus-themes-load-operandi))
+    :custom
+    (modus-themes-syntax '(yellow-comments)))
 
   ;;
   ;; Project management package
   ;;
   (use-package project
-	:config
-	(defun project-disable-vc-tramp (orig-fun dir)
-	  (if (tramp-tramp-file-p dir)
+    :config
+    (defun project-disable-vc-tramp (orig-fun dir)
+      (if (tramp-tramp-file-p dir)
 		  nil
 		(funcall orig-fun dir)))
-
-	;; Disables slow vc operations for directories managed by tramp
-	(advice-add 'project-try-vc :around #'project-disable-vc-tramp)
-
-	:custom
-	(project-switch-commands '((project-find-file "Find file")
+    
+    ;; Disables slow vc operations for directories managed by tramp
+    ;(advice-add 'project-try-vc :around #'project-disable-vc-tramp)
+    
+    :custom
+    (project-switch-commands '((project-find-file "Find file")
 							   (project-find-regexp "Find regexp")
 							   (project-dired "Dired")
 							   (project-shell "Shell"))))
@@ -92,15 +84,12 @@
   ;; Improved buffer list package
   ;;
   (use-package ibuffer
-	:defer t
-	
+	:defer t	
 	:init
 	;; Redirects list-buffers to call ibuffer
 	(defalias 'list-buffers 'ibuffer)
-	
 	:custom
 	(ibuffer-show-empty-filter-groups nil)
-	
 	(ibuffer-formats
 	 '((mark modified read-only locked " "
 			 (name 18 -1 :left)
@@ -160,37 +149,29 @@
   ;; Tramp is used to connect to remote or local machine via various methods (ssh, docker, su...)
   (use-package tramp
 	:defer t
-
 	:custom
 	;; Puts autosave files in a local directory (faster and does not clutter remote hosts)
 	(tramp-auto-save-directory "~/.cache/emacs/tramp")
-
 	;; Puts backups in a local directory as well
 	(tramp-backup-directory-alist '(("." . "~/.cache/emacs/backups")))
-
 	;; Modifies default tramp pattern to recognize the values added by vterm directory tracking.
 	;; Without this tramp is confused and can not recognize where the prompt ends.
 	;; The added part is \\(?:\x1b][0-9;A]*.*\x1b\\\\\\)*
 	(tramp-shell-prompt-pattern "\\(?:^\\|\\)[^]\n#-%>]*#?[]#-%>][[:blank:]]*\\(?:\\[[;[:digit:]]*[[:alpha:]][[:blank:]]*\\)*\\(?:\x1b][0-9;A]*.*\x1b\\\\\\)*")
-
 	(tramp-remote-process-environment
 	 '("ENV=" "TMOUT=0" "LC_ALL=fr_FR.UTF-8" "CDPATH=" "HISTORY=" "MAIL=" "MAILCHECK=" "MAILPATH=" "PAGER=cat" "autocorrect=" "correct=" "HISTFILE=/dev/null"))
-
 	:config
 	;; Profile definition to use bash as remote shell
 	(connection-local-set-profile-variables
 	 'remote-bash
 	 '((shell-file-name . "/bin/bash")))
-
 	;; Applies remote bash to pi connections
 	(connection-local-set-profiles
 	 '(:application tramp :machine "pi")
 	 'remote-bash)
-
 	;; Proxies su and sudo via ssh on pi
 	(add-to-list 'tramp-default-proxies-alist
 				 '("pi" "root" "/ssh:pi:"))
-
 	;; Prevents vc refresh on tramp remote directories
 	(with-eval-after-load 'vc
 	  (customize-set-value 'vc-ignore-dir-regexp 
@@ -200,25 +181,19 @@
 
   (use-package eshell
 	:defer t
-
 	:preface
 	(defun eshell-new ()
 	  "Open a new instance of eshell."
 	  (interactive)
 	  (eshell 'N))
-
 	:config
 	(require 'em-tramp)
-
 	:bind
 	("C-c h" . 'eshell-new)
-
 	:hook
 	(eshell-mode . (lambda ()
 					 (company-mode -1)))
-
 	:custom
-
 	(eshell-prefer-lisp-variables t)
 	(eshell-prefer-lisp-functions t)
 	(eshell-prompt-function (lambda ()
@@ -273,29 +248,27 @@
   (kept-new-versions 5)
   (delete-old-versions t)
   (backup-by-copying t)
-  (backup-directory-alist
-   '(("tramp-file-name-regexp" . "nil")
-	 ("." . "~/.cache/emacs/backups")))
+  (ring-bell-function 'ignore)
   (electric-indent-mode t)
   (electric-pair-mode t)
   (electric-pair-pairs
    '((?\" . ?\")
-     (?\{ . ?\}))))
+	 (?\{ . ?\})))
+  (backup-directory-alist
+   '(("tramp-file-name-regexp" . "nil")
+	 ("." . "~/.cache/emacs/backups"))))
 
 ;;
 ;; Bookmark+ adds addtional functionalities to the core bookmark package.
 ;; 
 (use-package bookmark+
   :after bookmark
-
   :config
   (defun bmkp-root-or-sudo-logged-p ()
 	"The detection of root is broken because you can be logged in as root on a remote host
      and not logged in as root on your localhost."
 	nil)
-  
   :vc (:fetcher github :repo "emacsmirror/bookmark-plus")
-
   :hook
   (bookmark-bmenu-mode . (lambda ()
 						   (display-line-numbers-mode -1))))
@@ -305,10 +278,8 @@
 ;;
 (use-package dired+
   :after dired
-
   :vc
   (:fetcher github :repo "emacsmirror/dired-plus")
-
   :config 
   (diredp-toggle-find-file-reuse-dir t))
 
@@ -316,7 +287,6 @@
   :config
   (when (daemonp)
 	(exec-path-from-shell-initialize))
-  
   :custom
   (exec-path-from-shell-variables '("PATH" "MANPATH" "SSH_AUTH_SOCK")))
 
@@ -335,10 +305,8 @@
         ("C-c ( p"   . paredit-add-to-previous-list)
         ("C-c ( j"   . paredit-join-with-next-list)
         ("C-c ( J"   . paredit-join-with-previous-list))
-
   :hook 
-  ((emacs-lisp-mode lisp-mode) . paredit-mode)
-  
+  ((emacs-lisp-mode lisp-mode) . paredit-mode)  
   :config
   (with-eval-after-load 'eldoc
 	(eldoc-add-command
@@ -357,15 +325,28 @@
   (haskell-mode . highlight-uses-mode)
   (haskell-mode . interactive-haskell-mode))
 
-(use-package php-mode)
-
-(use-package dap-mode
-  :defer t
+(use-package haskell-mode
   :custom
-  (dap-auto-configure-features '(locals expressions)))
+  (haskell-indentation-electric-flag t)
+  (haskell-process-auto-import-loaded-modules t)
+  (haskell-process-log t)
+  (haskell-process-show-debug-tips nil)
+  (haskell-process-suggest-remove-import-lines t)
+  :hook
+  (haskell-mode . haskell-decl-scan-mode)
+  (haskell-mode . highlight-uses-mode)
+  (haskell-mode . interactive-haskell-mode))
 
 (use-package iedit
   :bind ("C-;" . iedit-mode))
+
+(use-package magit
+  :bind ("C-c g" . magit-status))
+
+(use-package docker
+  :bind ("C-c d" . docker)
+  :custom
+  (docker-container-default-sort-key '("Names" . nil)))
 
 (use-package treemacs
   :preface
@@ -390,14 +371,6 @@
 (use-package treemacs-magit
   :after (treemacs magit))
 
-(use-package docker
-  :bind ("C-c d" . docker)
-  :custom
-  (docker-container-default-sort-key '("Names" . nil)))
-
-(use-package magit
-  :bind ("C-c g" . magit-status))
-
 ;;
 ;; Company text and code completion package.
 ;;
@@ -405,24 +378,32 @@
   :custom
   ;; Does not wait before showing the completion popin.
   (company-idle-delay 0.0)
-
   ;; Shows completion popin after a minimum input of 3 characters.
   (company-minimum-prefix-length 3)
-
   ;; Activates dabbrev-code for all modes.
   ;; It handles words with underscores correctly as one word.
   (company-dabbrev-code-modes t)
-
   ;; Uses dabbrev-code completion for comments and non code texts.
-  (company-dabbrev-code-everywhere t)
-  
+  (company-dabbrev-code-everywhere t)  
   :hook
   ;; Activates company-mode globally
   (after-init . global-company-mode))
 
-(use-package less-css-mode
+(use-package which-key
+  :custom
+  (which-key-add-column-padding 2)
+  (which-key-max-description-length nil)  
   :hook
-  (less-css-mode . electric-indent-local-mode))
+  (prog-mode . which-key-mode))
+
+(use-package helpful
+  :defer t
+  :bind
+  ("C-h f" . 'helpful-callable)
+  ("C-h v" . 'helpful-variable)
+  ("C-h k" . 'helpful-key)
+  ("C-h F" . 'helpful-function)
+  ("C-h C" . 'helpful-command))
 
 (use-package vterm
   :config
@@ -446,44 +427,6 @@
 				  (display-line-numbers-mode -1)
 				  (setq-local nobreak-char-display nil))))
 
-(use-package which-key
-  :custom
-  (which-key-add-column-padding 2)
-  (which-key-max-description-length nil)
-  
-  :hook
-  (prog-mode . which-key-mode))
-
-(use-package helpful
-  :defer t
-  :bind
-  ("C-h f" . 'helpful-callable)
-  ("C-h v" . 'helpful-variable)
-  ("C-h k" . 'helpful-key)
-  ("C-h F" . 'helpful-function)
-  ("C-h C" . 'helpful-command))
-
-(use-package js2-mode
-  :defer t
-  :custom
-  (js-indent-level 2)
-  (js2-highlight-level 3)
-  (js2-mode-show-parse-errors nil)
-  (js2-mode-show-strict-warnings nil))
-
-(use-package prettier-js
-  :defer t
-  :custom
-  (prettier-js-show-errors 'echo))
-
-(use-package rjsx-mode
-  :defer t
-  :mode "\\.js"
-  :hook 
-  (rjsx-mode . (lambda ()
-				 (electric-indent-local-mode)
-				 (prettier-js-mode)
-				 (setq tab-width 2))))
 
 (use-package vertico
   :hook 
@@ -530,17 +473,13 @@
   :init
   ;; Use Consult to select xref locations with preview
   (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-  
+        xref-show-definitions-function #'consult-xref)  
   :config
   (consult-customize consult-ripgrep consult-git-grep consult-grep :preview-key nil)
-
   (consult-customize consult-bookmark consult-recent-file consult-xref
 					 consult--source-bookmark consult--source-file-register
 					 consult--source-recent-file consult--source-project-recent-file :preview-key '(:debounce 0.4 any))
-
   (setq completion-in-region-function #'consult-completion-in-region)
-
   (defun consult-buffer-state-no-tramp ()
 	"Buffer state function that doesn't preview Tramp buffers."
 	(let ((orig-state (consult--buffer-state))
@@ -554,10 +493,8 @@
                       nil))))
       (lambda (action cand)
 		(funcall orig-state action (funcall filter action cand)))))
-
   (setq consult--source-buffer
 		(plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
-  
   :bind
   (;; Custom bindings
    ("C-c s" . consult-line)
@@ -619,14 +556,9 @@
   :bind (:map minibuffer-local-map
 			  ("M-o" . embark-export)))
 
-(use-package esh-autosuggest
-  :hook (eshell-mode . esh-autosuggest-mode))
-
 (use-package doom-modeline
   :init
   (doom-modeline-mode))
-
-(use-package vcl-mode)
 
 (use-package eldoc-box
   :hook (eglot-managed-mode . eldoc-box-hover-mode)
